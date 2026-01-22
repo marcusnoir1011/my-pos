@@ -6,12 +6,9 @@ export const validator =
 
       // create
       if (!isUpdate) {
-        // 1. product name
         if (product.name === undefined)
           throw new Error("Product is missing a name.");
-        // 2. product price
         if (product.price === undefined) throw new Error("Product is missing ");
-        // 3. product quantity
         if (product.stockQuantity === undefined)
           throw new Error("Stock Quantity is missing.");
       }
