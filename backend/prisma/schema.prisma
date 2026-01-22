@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  cashier
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role
+  createdAt DateTime  @default(now())
+
+  sales   Sale[]
+
+  @@map("users")
+}
+
+model Product {
+  id            Int       @id @default(autoincrement())
+  name          String
+  sku           String?
+  price         Int
+  stockQuantity Int
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  saleItems     SaleItem[]
+
+  @@map("products")
+}
+
+model Sale {
+  id          Int         @id @default(autoincrement())
+  cashierId   Int
+  totalAmount Int
+  createdAt   DateTime    @default(now())
+
+  items       SaleItem[]
+
+  cashier     User        @relation(fields: [cashierId], references: [id])
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id  Int   @id @default(autoincrement())
+  saleId  Int
+  productId Int
+  quantity  Int
+  unitPrice Int
+  subTotal  Int
+
+  sale      Sale  @relation(fields: [saleId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
