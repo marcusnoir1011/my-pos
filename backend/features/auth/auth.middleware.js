@@ -5,6 +5,7 @@ class AuthMiddleware {
   constructor(JWT_SECRET) {
     this.#JWT_SECRET = JWT_SECRET;
   }
+
   tokenVerify(req, res, next) {
     try {
       const authHeader = req.headers.authorization;
