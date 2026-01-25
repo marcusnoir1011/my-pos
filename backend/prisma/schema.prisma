@@ -19,14 +19,15 @@ enum Role {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String
-  email     String    @unique
-  password  String
-  role      Role
-  createdAt DateTime  @default(now())
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password      String
+  role          Role
+  createdAt     DateTime        @default(now())
 
-  sales   Sale[]
+  sales         Sale[]
+  refreshToken  RefreshToken[]
 
   @@map("users")
 }
@@ -34,7 +35,7 @@ model User {
 model Product {
   id            Int       @id @default(autoincrement())
   name          String
-  sku           String?
+  sku           String?   @unique
   price         Int
   stockQuantity Int
   isActive      Boolean   @default(true)
@@ -55,19 +56,36 @@ model Sale {
 
   cashier     User        @relation(fields: [cashierId], references: [id])
 
+  @@index([cashierId])
   @@map("sales")
 }
 
 model SaleItem {
-  id  Int   @id @default(autoincrement())
-  saleId  Int
+  id        Int     @id @default(autoincrement())
+  saleId    Int
   productId Int
   quantity  Int
   unitPrice Int
   subtotal  Int
 
-  sale      Sale  @relation(fields: [saleId], references: [id])
+  sale      Sale    @relation(fields: [saleId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
 
+  @@index([saleId])
+  @@index([productId])
   @@map("sale_items")
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique
+  userId    Int
+  expiresAt DateTime
+  isRevoked Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
