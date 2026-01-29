@@ -22,8 +22,40 @@ class AuthController {
 
       return res.status(200).json({
         success: true,
-        message: "User log in successful.",
+        message: "User logged in successfully.",
         data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+  async logout(req, res, next) {
+    try {
+      const { refreshToken } = req.body;
+      await authService.logout(refreshToken);
+
+      return res.status(200).json({
+        success: true,
+        message: "User logged out successfully.",
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async refresh(req, res, next) {
+    try {
+      const { token } = req.body;
+      const { accessToken, refreshToken } =
+        await authService.refreshToken(token);
+
+      return res.status(200).json({
+        success: true,
+        message: "Refreshed token successfully.",
+        data: {
+          accessToken,
+          refreshToken,
+        },
       });
     } catch (err) {
       next(err);

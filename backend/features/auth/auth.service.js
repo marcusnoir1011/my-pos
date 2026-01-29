@@ -58,6 +58,35 @@ class AuthService {
     return { user, accessToken, refreshToken };
   }
 
+  async logout(refreshToken) {
+    if (!refreshToken) {
+      throw new AppError("newRefresh token required.", 400);
+    }
+
+    const token = await prisma.refreshToken.findUnique({
+      where: {
+        token: refreshToken,
+      },
+    });
+
+    if (!token) {
+      return;
+    }
+
+    if (token.isRevoked) {
+      return;
+    }
+
+    await prisma.refreshToken.update({
+      where: {
+        token: refreshToken,
+      },
+      data: {
+        isRevoked: true,
+      },
+    });
+  }
+
   async refreshToken(token) {
     if (!token) throw new AppError("Token missing. Unauthorized.", 401);
 
