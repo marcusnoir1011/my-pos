@@ -1,8 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 import { prisma } from "../../libs/prisma";
 import { AppError } from "../../libs/AppError";
+import { raw } from "../../generated/prisma/internal/prismaNamespace";
 
 class AuthService {
   #SALT_ROUND;
@@ -45,6 +47,7 @@ class AuthService {
 
     const accessToken = await this.#generateAccessToken(user);
     const refreshToken = await this.#createRefreshToken(user.id);
+
     return { user, accessToken, refreshToken };
   }
 
@@ -55,31 +58,20 @@ class AuthService {
 
     const accessToken = await this.#generateAccessToken(user);
     const refreshToken = await this.#createRefreshToken(user.id);
+
     return { user, accessToken, refreshToken };
   }
 
-  async logout(refreshToken) {
+  async logout(rawToken) {
     if (!refreshToken) {
       throw new AppError("newRefresh token required.", 400);
     }
 
-    const token = await prisma.refreshToken.findUnique({
+    const hashedToken = this.#hashToken(rawToken);
+
+    await prisma.refreshToken.updateMany({
       where: {
-        token: refreshToken,
-      },
-    });
-
-    if (!token) {
-      return;
-    }
-
-    if (token.isRevoked) {
-      return;
-    }
-
-    await prisma.refreshToken.update({
-      where: {
-        token: refreshToken,
+        token: hashedToken,
       },
       data: {
         isRevoked: true,
@@ -87,20 +79,32 @@ class AuthService {
     });
   }
 
-  async refreshToken(token) {
-    if (!token) throw new AppError("Token missing. Unauthorized.", 401);
+  async refreshToken(rawToken) {
+    if (!rawToken) throw new AppError("Token missing. Unauthorized.", 401);
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
 
     const storedToken = await prisma.refreshToken.findUnique({
       where: {
-        token,
+        token: hashedToken,
       },
     });
 
     if (!storedToken) throw new AppError("Invalid Token. Unauthorized.", 401);
+
     if (storedToken.isRevoked === true)
       throw new AppError("Token revoked. Unauthorized.", 403);
-    if (storedToken.expiresAt < Date())
+
+    if (storedToken.expiresAt < new Date())
       throw new AppError("Token expired. Unauthorized.", 401);
+
+    await prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: { isRevoked: true },
+    });
 
     const user = await prisma.user.findUnique({
       where: {
@@ -115,12 +119,7 @@ class AuthService {
     });
     if (!user) throw new AppError("User not found.", 401);
 
-    await prisma.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { isRevoked: true },
-    });
-
-    const newRefreshToken = this.#createRefreshToken(user.id);
+    const newRefreshToken = await this.#createRefreshToken(user.id);
     const accessToken = this.#generateAccessToken(user);
 
     return { accessToken, refreshToken: newRefreshToken };
@@ -145,6 +144,7 @@ class AuthService {
 
   async #validateUser(email, password) {
     const user = await this.#getUserByEmail(email);
+    if (!user) throw new AppError("Invalid Credentials.", 401);
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -162,24 +162,29 @@ class AuthService {
     };
 
     const token = jwt.sign(payload, this.#JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "15m",
     });
     return token;
   }
   async #createRefreshToken(userId) {
-    const token = crypto.randomUUID(64).toString("hex");
+    const rawToken = crypto.randomBytes(64).toString("hex");
+
+    const hashedToken = this.#hashToken(rawToken);
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     await prisma.refreshToken.create({
       data: {
-        token,
+        token: hashedToken,
         userId,
         expiresAt,
       },
     });
-    return token;
+    return rawToken;
+  }
+  #hashToken(token) {
+    return crypto.createHash("sha256").update(token).digest("hex");
   }
 }
 

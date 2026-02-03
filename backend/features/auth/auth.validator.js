@@ -17,7 +17,7 @@ export const validator = async (req, res, next) => {
     if (name === undefined) throw new Error("Name is missing.");
     if (validateEmail(email) === false)
       throw new Error("Email missing or not valid.");
-    if (validatePassword(password))
+    if (!validatePassword(password))
       throw new Error(
         "Password must be at least 8 characters, 1 Uppercase, 1 lowercase, 1 number, 1 special character.",
       );

@@ -1,15 +1,27 @@
 import authService from "./auth.service";
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: (process.env.NODE_ENV = "production"),
+  sameSite: "strict",
+  path: "/auth/refresh",
+};
+
 class AuthController {
   async register(req, res, next) {
     try {
       const { name, email, password } = req.body;
       const result = await authService.register({ name, email, password });
 
-      return res.status(201).json({
+      res.cookie("refreshToken", result.refreshToken, cookieOptions);
+
+      res.status(201).json({
         success: true,
         message: "User registration successful.",
-        data: result,
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+        },
       });
     } catch (err) {
       next(err);
@@ -20,10 +32,15 @@ class AuthController {
       const { email, password } = req.body;
       const result = await authService.login({ email, password });
 
-      return res.status(200).json({
+      res.cookie("refreshToken", result.refreshToken, cookieOptions);
+
+      res.status(200).json({
         success: true,
         message: "User logged in successfully.",
-        data: result,
+        data: {
+          user: result.user,
+          accessToken: result.accessToken,
+        },
       });
     } catch (err) {
       next(err);
@@ -31,10 +48,12 @@ class AuthController {
   }
   async logout(req, res, next) {
     try {
-      const { refreshToken } = req.body;
+      const token = req.cookies.refreshToken;
       await authService.logout(refreshToken);
 
-      return res.status(200).json({
+      res.clearCookit("refreshToken", cookieOptions);
+
+      res.status(200).json({
         success: true,
         message: "User logged out successfully.",
       });
@@ -45,16 +64,17 @@ class AuthController {
 
   async refresh(req, res, next) {
     try {
-      const { token } = req.body;
+      const token = req.cookies.refreshToken;
       const { accessToken, refreshToken } =
         await authService.refreshToken(token);
 
-      return res.status(200).json({
+      res.cookie("refreshToken", refreshToken, cookieOptions);
+
+      res.status(200).json({
         success: true,
         message: "Refreshed token successfully.",
         data: {
           accessToken,
-          refreshToken,
         },
       });
     } catch (err) {
