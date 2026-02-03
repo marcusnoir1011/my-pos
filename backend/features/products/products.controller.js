@@ -23,7 +23,7 @@ class ProductController {
         success: true,
         message: "Update product successful.",
         result,
-      });
+        hat’s exactly how freelancing works.   });
     } catch (err) {
       next(err);
     }
