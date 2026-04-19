@@ -51,7 +51,7 @@ class AuthController {
       const token = req.cookies.refreshToken;
       await authService.logout(refreshToken);
 
-      res.clearCookit("refreshToken", cookieOptions);
+      res.clearCookie("refreshToken", cookieOptions);
 
       res.status(200).json({
         success: true,
