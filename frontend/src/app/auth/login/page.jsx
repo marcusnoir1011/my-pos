@@ -1,5 +1,7 @@
 'use client'
 
+import Link from "next/link";
+
 export default function LoginPage() {
     async function handleLogin(event) {
         event.preventDefault();
@@ -14,16 +16,18 @@ export default function LoginPage() {
 
     return (
         <form onSubmit={handleLogin} className="flex flex-col justify-center max-w-md mx-auto p-6 space-y-4">
-            <h2 className="w-full  text-center text-2xl font-semibold">Login to your account</h2>
+            <h2 className="w-full text-center text-2xl font-semibold">Login to your account</h2>
             <div>
                 <label htmlFor="email">Email: </label>
-                <input name="email" type="email"  className="border p-2 w-full" />
+                <input name="email" type="email"  className="w-full border p-2" />
             </div>
             <div>
                 <label htmlFor="password">Password: </label>
-                <input name="password" type="password" className="border p-2 w-full" />
+                <input name="password" type="password" className="w-full border p-2" />
             </div>
-            <button className="bg-black text-white p-2 w-full">Login</button>
+            <button className="w-full bg-black text-white p-2">Login</button>
+
+            <Link href="register" className="hover:underline">Register a new account.</Link>
         </form>
     )
 }
