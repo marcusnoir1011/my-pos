@@ -2,16 +2,6 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "",
-<<<<<<< HEAD
-  "main": "app.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js"
-  },
-  "keywords": [],
-=======
->>>>>>> dev
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -42,10 +32,6 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "pg": "^8.17.2",
-    "prisma": "^7.3.0"
-=======
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -87,6 +73,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
->>>>>>> dev
   }
 }
