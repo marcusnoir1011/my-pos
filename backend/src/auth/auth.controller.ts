@@ -10,6 +10,7 @@ import {
 
 import { User as UserModel } from 'generated/prisma/client.js';
 import { AuthService } from './auth.service.js';
+import type { UserUpdateInput } from 'generated/prisma/models.js';
 
 @Controller('auth')
 export class AuthController {
@@ -25,6 +26,17 @@ export class AuthController {
     @Body() userData: { email: string; password: string },
   ): Promise<UserModel> {
     return this.authService.registerUser(userData);
+  }
+
+  @Put('user/:id')
+  async updateUser(
+    @Param('id') id: string,
+    @Body() data: UserUpdateInput,
+  ): Promise<UserModel> {
+    return this.authService.updateUser({
+      where: { id: Number(id) },
+      data: data,
+    });
   }
 
   @Delete('user/:id')
