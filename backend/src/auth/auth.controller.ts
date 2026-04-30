@@ -1,46 +1,19 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Put,
-  Delete,
-} from '@nestjs/common';
-
-import { User as UserModel } from 'generated/prisma/client.js';
+import { Controller, Post, Body, Param } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
-import type { UserUpdateInput } from 'generated/prisma/models.js';
+import { CreateUserDto, LoginUserDto } from '../dtos.js';
+import { User } from 'generated/prisma/client.js';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get('user/:id')
-  async getUserById(@Param('id') id: string): Promise<UserModel | null> {
-    return this.authService.user({ id: Number(id) });
+  @Post('/register')
+  async registerUser(@Body() data: CreateUserDto): Promise<User | null> {
+    return this.authService.register();
   }
 
-  @Post('user')
-  async reigsterUser(
-    @Body() userData: { email: string; password: string },
-  ): Promise<UserModel> {
-    return this.authService.registerUser(userData);
-  }
-
-  @Put('user/:id')
-  async updateUser(
-    @Param('id') id: string,
-    @Body() data: UserUpdateInput,
-  ): Promise<UserModel> {
-    return this.authService.updateUser({
-      where: { id: Number(id) },
-      data: data,
-    });
-  }
-
-  @Delete('user/:id')
-  async deleteUser(@Param('id') id: string): Promise<UserModel> {
-    return this.authService.deleteUser({ id: Number(id) });
+  @Post('/login')
+  async loginUser(@Body() data: LoginUserDto): ProPromise<User | null> {
+    return this.authService.login();
   }
 }
