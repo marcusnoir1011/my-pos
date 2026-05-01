@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 import { CreateUserDto, LoginUserDto } from '../dtos.js';
 import { User } from 'generated/prisma/client.js';
@@ -13,7 +13,7 @@ export class AuthController {
   }
 
   @Post('/login')
-  async loginUser(@Body() data: LoginUserDto): ProPromise<User | null> {
+  async loginUser(@Body() data: LoginUserDto): Promise<User | null> {
     return this.authService.login();
   }
 }
