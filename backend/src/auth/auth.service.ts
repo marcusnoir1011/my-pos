@@ -25,23 +25,36 @@ export class AuthService {
   // }
 
   async register(email: string, password: string): Promise<User | null> {
-    const user = await this.userService.user({ email });
-    if (!user) return null;
+    const existingUser = await this.userService.user({ email });
+    if (existingUser) {
+      throw new Error('User already exists.');
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    if (!hashedPassword) return null;
-    password = hashedPassword;
-
     const userData: CreateUserDto = {
       email,
-      password,
+      password: hashedPassword,
     };
 
     const result = await this.userService.registerUser(userData);
-    if (!result) return null;
+    if (!result) {
+      throw new Error('Registration failed.');
+    }
 
     return result;
   }
 
-  async login() {}
+  async login(email: string, password: string): Promise<User | null> {
+    const existingUser = await this.userService.user({ email });
+    if (!existingUser) {
+      throw new Error('User does not exist.');
+    }
+
+    const isMatched = await bcrypt.compare(password, existingUser.password);
+    if (!isMatched) {
+      throw new Error('Wrong Credentials.');
+    }
+
+    return existingUser;
+  }
 }
