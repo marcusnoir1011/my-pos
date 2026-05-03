@@ -13,16 +13,9 @@ export class AuthService {
     private prisma: PrismaService,
     private readonly userService: UserService,
   ) {}
-
-  // async validateUser(email: string, password: string) {
-  //   const user = await this.userService.user({ email });
-  //   if (!user) return null;
-
-  //   const isMatch = await bcrypt.compare(password, user.password);
-  //   if (!isMatch) return null;
-
-  //   return user;
-  // }
+  async validateUser(email: string): Promise<User | null> {
+    const user = await this.userService.user({ email });
+  }
 
   async register(email: string, password: string): Promise<User | null> {
     const existingUser = await this.userService.user({ email });
