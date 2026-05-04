@@ -13,8 +13,16 @@ export class AuthService {
     private prisma: PrismaService,
     private readonly userService: UserService,
   ) {}
-  async validateUser(email: string): Promise<User | null> {
+
+  // for login
+  async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.user({ email });
+    if (user && user.password === password) {
+      //const { password, ...result } = user;
+
+      return user;
+    }
+    return null;
   }
 
   async register(email: string, password: string): Promise<User | null> {
